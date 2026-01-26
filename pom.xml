@@ -59,7 +59,20 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+    		<groupId>psvm.roms.common</groupId>
+    		<artifactId>model</artifactId>
+    		<version>[1.0.0,)</version> 
+		</dependency>
 	</dependencies>
+
+	<repositories>
+    <repository>
+        <id>github</id>
+        <url>https://maven.pkg.github.com/PSVM-Solutions/psvm-roms-commonModels</url>
+        <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+</repositories>
 
 	<build>
 		<plugins>
