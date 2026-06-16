@@ -79,10 +79,10 @@ pipeline {
             steps {
                 script {
                     try {
-                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                        docker.withRegistry('https://index.docker.io/v1/', 'DOCKER_HUB_USER') {
                             def tag = "menu-service-${env.BUILD_NUMBER}"
-                            echo "Building Docker image ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${tag}..."
-                            def customImage = docker.build("${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${tag}")
+                            echo "Building Docker image ${env.DOCKER_HUB_USER_USR}/${DOCKER_HUB_REPO}:${tag}..."
+                            def customImage = docker.build("${env.DOCKER_HUB_USER_USR}/${DOCKER_HUB_REPO}:${tag}")
                             
                             echo "Pushing Docker image..."
                             customImage.push()
