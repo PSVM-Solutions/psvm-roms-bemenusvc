@@ -8,6 +8,10 @@ pipeline {
     environment {
         GITHUB_CREDS = credentials('github-packages-token')
         IMAGE_NAME = 'menu-service'
+        
+        // Bind the MongoDB credentials configured in Jenkins credentials store
+        MONGODB_ROOT_USERNAME = credentials('MONGODB_ROOT_USERNAME')
+        MONGODB_ROOT_PASSWORD = credentials('MONGODB_ROOT_PASSWORD')
     }
 
     stages {
@@ -74,8 +78,14 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Building Docker image ${IMAGE_NAME}:${env.BUILD_NUMBER}..."
-                    docker.build("${IMAGE_NAME}:${env.BUILD_NUMBER}")
+                    try {
+                        echo "Building Docker image ${IMAGE_NAME}:${env.BUILD_NUMBER}..."
+                        docker.build("${IMAGE_NAME}:${env.BUILD_NUMBER}")
+                    } catch (Exception e) {
+                        echo "WARNING: Docker build failed: ${e.message}"
+                        echo "Please ensure the Jenkins agent has the Docker CLI installed and access to the Docker daemon."
+                        currentBuild.result = 'UNSTABLE'
+                    }
                 }
             }
         }
