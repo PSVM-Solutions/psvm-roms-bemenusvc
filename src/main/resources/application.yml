@@ -4,4 +4,4 @@ server:
 spring:
     data:
         mongodb:
-            uri: mongodb://localhost:27017/menu-db
+            uri: mongodb://mongormsdb:mongormsdbpass@100.85.205.36:27017/menu-db?authSource=admin

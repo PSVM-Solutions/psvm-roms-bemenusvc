@@ -2,16 +2,11 @@ pipeline {
     agent any
 
     tools {
-        // Defines the JDK tool configured globally in your Jenkins instance (needs to match Java 21)
         jdk 'jdk-21'
     }
 
     environment {
-        // Credentials ID for GitHub Packages in Jenkins. 
-        // This should be a "Username with password" credential containing your GitHub username and Personal Access Token (PAT).
         GITHUB_CREDS = credentials('github-packages-token')
-        
-        // Image name for containerization (optional)
         IMAGE_NAME = 'menu-service'
     }
 
@@ -25,7 +20,6 @@ pipeline {
         stage('Prepare Maven Settings') {
             steps {
                 echo 'Generating temporary settings.xml for GitHub Packages authentication...'
-                // Create a temporary maven settings.xml to authenticate with GitHub Packages to pull the commonModels dependency.
                 writeFile file: 'tmp-settings.xml', text: """<?xml version="1.0" encoding="UTF-8"?>
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -69,7 +63,6 @@ pipeline {
             }
             post {
                 always {
-                    // Archive unit test results in Jenkins
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -81,14 +74,8 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Building Docker image ${IMAGE_NAME}:${BUILD_NUMBER}..."
-                    // Standard Jenkins docker-pipeline plugin usage
-                    // Alternatively, you can run 'sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."'
-                    if (isUnix()) {
-                        sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
-                    } else {
-                        bat "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
-                    }
+                    echo "Building Docker image ${IMAGE_NAME}:${env.BUILD_NUMBER}..."
+                    docker.build("${IMAGE_NAME}:${env.BUILD_NUMBER}")
                 }
             }
         }
@@ -97,7 +84,6 @@ pipeline {
     post {
         always {
             echo 'Cleaning up temporary settings.xml...'
-            // Clean up the settings file containing the GITHUB_CREDS to avoid credential leakage in workspace
             script {
                 if (isUnix()) {
                     sh 'rm -f tmp-settings.xml'
