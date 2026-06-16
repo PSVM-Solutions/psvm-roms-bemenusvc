@@ -7,8 +7,8 @@ pipeline {
 
     environment {
         GITHUB_CREDS = credentials('github-packages-token')
-        IMAGE_NAME = 'menu-service'
-        
+        DOCKER_HUB_USER = credentials('DOCKER_HUB_USER')
+        DOCKER_HUB_REPO = credentials('DOCKER_HUB_REPO')        
         // Bind the MongoDB credentials configured in Jenkins credentials store
         MONGODB_ROOT_USERNAME = credentials('MONGODB_ROOT_USERNAME')
         MONGODB_ROOT_PASSWORD = credentials('MONGODB_ROOT_PASSWORD')
@@ -72,18 +72,25 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build & Push') {
             when {
                 expression { fileExists('Dockerfile') }
             }
             steps {
                 script {
                     try {
-                        echo "Building Docker image ${IMAGE_NAME}:${env.BUILD_NUMBER}..."
-                        docker.build("${IMAGE_NAME}:${env.BUILD_NUMBER}")
+                        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                            def tag = "menu-service-${env.BUILD_NUMBER}"
+                            echo "Building Docker image ${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${tag}..."
+                            def customImage = docker.build("${DOCKER_HUB_USER}/${DOCKER_HUB_REPO}:${tag}")
+                            
+                            echo "Pushing Docker image..."
+                            customImage.push()
+                            customImage.push("menu-service-latest")
+                        }
                     } catch (Exception e) {
-                        echo "WARNING: Docker build failed: ${e.message}"
-                        echo "Please ensure the Jenkins agent has the Docker CLI installed and access to the Docker daemon."
+                        echo "WARNING: Docker build/push failed: ${e.message}"
+                        echo "Please ensure the Jenkins agent has the Docker CLI installed, access to the Docker daemon, and credentials configured."
                         currentBuild.result = 'UNSTABLE'
                     }
                 }
