@@ -100,6 +100,14 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.21.2</version>
+				<configuration>
+					<format>xml</format> <linkXRef>false</linkXRef>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
